@@ -44,6 +44,6 @@ scripts/__pycache__/
 .idea/
 .DS_Store
 
-# Local env files (you'll have these later for DB credentials)
+# Local env files
 .env
 .env.local
