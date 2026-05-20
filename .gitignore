@@ -47,3 +47,20 @@ scripts/__pycache__/
 # Local env files
 .env
 .env.local
+
+# Compiled Go binaries (no extension on Linux/Mac)
+/buildindex
+/ingest
+/serve
+/embed
+
+# Logs
+*.log
+
+# SSH keys must never be in a repo
+id_*
+*.pem
+*.key
+
+# Random scratch files at repo root
+/*.txt
