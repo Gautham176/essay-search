@@ -2,7 +2,10 @@ module github.com/Gautham176/essay-search
 
 go 1.26.3
 
-require github.com/jackc/pgx/v5 v5.9.2
+require (
+	github.com/blevesearch/go-porterstemmer v1.0.3
+	github.com/jackc/pgx/v5 v5.9.2
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
