@@ -42,9 +42,6 @@ func TestTokenize(t *testing.T) {
 			want: []string{"big", "cat"}, // "a" is length 1
 		},
 		{
-			// TODO: add one more case you think is worth testing
-			// Think: what's an edge case the above don't cover?
-
 			name: "mixed punctuation numbers and empty strings",
 			in:   "Ready... 1, 2, 3 --- 'action'!!!",
 			want: []string{"readi", "action"}, // 1, 2, 3 drop out because length < 2, '---' is skipped entirely

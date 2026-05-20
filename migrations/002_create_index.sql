@@ -1,5 +1,5 @@
 -- One row per unique term across the entire corpus.
--- doc_count is denormalized for BM25's IDF calculation in Week 3.
+-- doc_count is denormalized for BM25's IDF calculation
 CREATE TABLE IF NOT EXISTS terms (
     id          SERIAL PRIMARY KEY,
     term        TEXT NOT NULL UNIQUE,

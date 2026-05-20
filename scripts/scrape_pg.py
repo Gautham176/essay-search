@@ -21,10 +21,8 @@ from bs4 import BeautifulSoup
 BASE = "https://www.paulgraham.com/"
 INDEX_URL = urljoin(BASE, "articles.html")
 HEADERS = {
-    # Be a polite citizen: identify yourself, don't pretend to be a browser.
-    "User-Agent": "essay-search-scraper/0.1 (educational project; contact: github.com/YOUR_USERNAME)",
+    "User-Agent": "essay-search-scraper/0.1 (educational project; contact: github.com/Gautham176)",
 }
-# PG's site is small and static — be gentle. 1 req/sec is plenty.
 REQUEST_DELAY_SEC = 1.0
 REQUEST_TIMEOUT_SEC = 20
 

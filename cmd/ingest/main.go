@@ -36,7 +36,7 @@ func main() {
 	dsn := flag.String("dsn", defaultDSN(), "Postgres connection string")
 	flag.Parse()
 
-	// Connect to Postgres. sql.Open doesn't actually connect — it sets up
+	// Connect to Postgres. sql.Open  sets up
 	// a connection pool. Ping() forces a real connection so we fail fast
 	// if the DB is unreachable.
 	db, err := sql.Open("pgx", *dsn)

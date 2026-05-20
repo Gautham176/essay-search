@@ -75,7 +75,6 @@ type document struct {
 }
 
 // loadDocuments reads all documents from the DB into memory.
-// At 173 docs this is fine; for millions you'd stream.
 func loadDocuments(db *sql.DB) ([]document, error) {
 	rows, err := db.Query(`SELECT id, body FROM documents ORDER BY id`)
 	if err != nil {
@@ -95,21 +94,11 @@ func loadDocuments(db *sql.DB) ([]document, error) {
 }
 
 // buildIndex tokenizes every document and builds the in-memory inverted index.
-// This is the core IR logic — write it yourself.
 func buildIndex(docs []document) index {
 	idx := make(index)
 
 	for _, doc := range docs {
 		tokens := tokenize.Tokenize(doc.body)
-
-		// TODO: for each (position, token) pair, update idx[token][doc.id].
-		// Remember:
-		//   - If idx[token] doesn't exist yet, you need to create the inner map.
-		//   - If idx[token][doc.id] doesn't exist yet, you need to create a *postingInfo.
-		//   - Then increment freq and append the position.
-		//
-		// Hint: Go's `range` over a slice gives you (index, value).
-		// Hint: check map keys with the comma-ok idiom: `if _, ok := m[k]; !ok { ... }`
 
 		for pos, tok := range tokens{
 			if _, ok := idx[tok]; !ok {
@@ -146,7 +135,7 @@ func writeIndex(db *sql.DB, idx index) error {
 	}
 
 	// Insert one term at a time, then its postings.
-	// For 10-20k terms this is fast enough. If it weren't, we'd use COPY.
+	// For 10-20k terms this is fast enough.
 	insertTerm := `INSERT INTO terms (term, doc_count) VALUES ($1, $2) RETURNING id`
 	insertPosting := `INSERT INTO postings (term_id, doc_id, term_freq, positions) VALUES ($1, $2, $3, $4)`
 

@@ -32,10 +32,7 @@ func Tokenize(text string) []string {
 	lowerText := strings.ToLower(text)
 
 	// Step 2: split into raw tokens on whitespace and non-word characters.
-	// Hint: strings.FieldsFunc lets you split on a custom function.
 	// A character is a "split point" if it is not a letter, digit, or apostrophe.
-	// TODO: use strings.FieldsFunc with a rune check (unicode.IsLetter, unicode.IsDigit)
-
 	rawTokens := strings.FieldsFunc(lowerText, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '\''
 	})
@@ -44,19 +41,14 @@ func Tokenize(text string) []string {
 	for _, tok := range rawTokens {
 		tok = normalizeWord(tok)
 
-		// TODO: drop the token if length < 2
 		if len(tok) < 2{
 			continue
 		}
-
-		// TODO: drop the token if it is in Stopwords
 		if Stopwords[tok]{
 			continue
 		}
 
 		// Step 4: Porter stem the token.
-		// The stemmer works on a []rune, not a string.
-		// stemmer.Stem() takes a []rune and returns a []rune.
 		stemmed := string(stemmer.Stem([]rune(tok)))
 
 		tokens = append(tokens, stemmed)
@@ -70,11 +62,7 @@ func Tokenize(text string) []string {
 //   - strips apostrophes (don't → dont)
 //   - returns the cleaned string (may be empty)
 func normalizeWord(word string) string {
-	// TODO: remove apostrophes using strings.ReplaceAll
 	word = strings.ReplaceAll(word, "'", "")
-	
-	// TODO: strip leading and trailing non-letter/non-digit characters.
-	// Hint: strings.TrimFunc with a rune check works cleanly here.
 	
 	word = strings.TrimFunc(word, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
