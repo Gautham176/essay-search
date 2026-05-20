@@ -60,7 +60,6 @@ func main() {
 	log.Printf("found %d essay files in %s", len(paths), *dir)
 
 	// Parse + insert one essay at a time. For 173 docs this is plenty fast;
-	// we'll batch later if needed.
 	inserted, updated, failed := 0, 0, 0
 	for _, p := range paths {
 		e, err := parseEssay(p)
