@@ -3,8 +3,6 @@ package tokenize
 import (
 	"strings"
 	"unicode"
-
-	stemmer "github.com/blevesearch/go-porterstemmer"
 )
 
 // Stopwords is the set of common English words we ignore during indexing.
@@ -24,37 +22,13 @@ var Stopwords = map[string]bool{
 	"not": true, "no": true, "so": true, "if": true, "then": true,
 }
 
-// Tokenize returns normalized tokens from text, in order of appearance.
-// The pipeline is: lowercase → split → normalize → filter → stem.
 func Tokenize(text string) []string {
-	// Step 1: lowercase the entire text.
-	// TODO: use strings.ToLower
-	lowerText := strings.ToLower(text)
-
-	// Step 2: split into raw tokens on whitespace and non-word characters.
-	// A character is a "split point" if it is not a letter, digit, or apostrophe.
-	rawTokens := strings.FieldsFunc(lowerText, func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '\''
-	})
-	// Step 3: for each raw token, normalize and filter.
-	var tokens []string
-	for _, tok := range rawTokens {
-		tok = normalizeWord(tok)
-
-		if len(tok) < 2{
-			continue
-		}
-		if Stopwords[tok]{
-			continue
-		}
-
-		// Step 4: Porter stem the token.
-		stemmed := string(stemmer.Stem([]rune(tok)))
-
-		tokens = append(tokens, stemmed)
+	toks := TokenizeWithOffsets(text)
+	out := make([]string, len(toks))
+	for i, t := range toks {
+		out[i] = t.Stemmed
 	}
-
-	return tokens
+	return out
 }
 
 // normalizeWord cleans a single token:
