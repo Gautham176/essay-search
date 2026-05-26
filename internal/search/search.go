@@ -7,6 +7,7 @@ import (
 
 	"github.com/Gautham176/essay-search/internal/tokenize"
 	"github.com/Gautham176/essay-search/internal/snippet"
+	"github.com/Gautham176/essay-search/internal/embed"
 )
 
 // Result is a single ranked search result.
@@ -23,24 +24,28 @@ type Result struct {
 // a few corpus-level statistics that we cache at startup because they're
 // expensive to recompute per query.
 type Engine struct {
-	db         *sql.DB
-	totalDocs  int
-	avgDocLen  float64
+    db         *sql.DB
+    totalDocs  int
+    avgDocLen  float64
+    embedder   *embed.Client
 }
 
 // NewEngine connects to the corpus statistics and returns a ready-to-query
 // Engine. Call this once at server startup, not per request.
 func NewEngine(db *sql.DB) (*Engine, error) {
-	e := &Engine{db: db}
+    e := &Engine{
+        db:       db,
+        embedder: embed.NewClient(),
+    }
 
-	row := db.QueryRow(`SELECT count(*), coalesce(avg(word_count), 0) FROM documents`)
-	if err := row.Scan(&e.totalDocs, &e.avgDocLen); err != nil {
-		return nil, fmt.Errorf("load corpus stats: %w", err)
-	}
-	if e.totalDocs == 0 {
-		return nil, fmt.Errorf("corpus is empty — run cmd/ingest and cmd/buildindex first")
-	}
-	return e, nil
+    row := db.QueryRow(`SELECT count(*), coalesce(avg(word_count), 0) FROM documents`)
+    if err := row.Scan(&e.totalDocs, &e.avgDocLen); err != nil {
+        return nil, fmt.Errorf("load corpus stats: %w", err)
+    }
+    if e.totalDocs == 0 {
+        return nil, fmt.Errorf("corpus is empty — run cmd/ingest and cmd/buildindex first")
+    }
+    return e, nil
 }
 
 // Stats returns corpus-level numbers, mostly useful for /health endpoints.

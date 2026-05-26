@@ -78,13 +78,13 @@ type searchResponse struct {
 func searchHandler(engine *search.Engine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-
+ 
 		query := r.URL.Query().Get("q")
 		if query == "" {
 			http.Error(w, `missing "q" parameter`, http.StatusBadRequest)
 			return
 		}
-
+ 
 		k := 10
 		if v := r.URL.Query().Get("k"); v != "" {
 			parsed, err := strconv.Atoi(v)
@@ -94,24 +94,43 @@ func searchHandler(engine *search.Engine) http.HandlerFunc {
 			}
 			k = parsed
 		}
-
-		results, err := engine.Search(r.Context(), query, k)
+ 
+		// Default to keyword search. Recognized modes: "keyword", "semantic".
+		mode := r.URL.Query().Get("mode")
+		if mode == "" {
+			mode = "keyword"
+		}
+ 
+		var (
+			results []search.Result
+			err     error
+		)
+		switch mode {
+		case "keyword":
+			results, err = engine.Search(r.Context(), query, k)
+		case "semantic":
+			results, err = engine.SemanticSearch(r.Context(), query, k)
+		default:
+			http.Error(w, `"mode" must be "keyword" or "semantic"`, http.StatusBadRequest)
+			return
+		}
+ 
 		if err != nil {
-			log.Printf("search error: %v", err)
+			log.Printf("search error (%s): %v", mode, err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
 		if results == nil {
-			results = []search.Result{} // serialize as [] not null
+			results = []search.Result{}
 		}
-
+ 
 		resp := searchResponse{
 			Query:     query,
 			Count:     len(results),
 			Results:   results,
 			LatencyMs: int(time.Since(start).Milliseconds()),
 		}
-
+ 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Printf("encode response: %v", err)

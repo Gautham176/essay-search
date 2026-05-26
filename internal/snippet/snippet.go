@@ -14,7 +14,7 @@ const windowSize = 200
 
 func Snippet(body string, queryTerms []string) string {
 	if len(queryTerms) == 0 || body == "" {
-		return truncate(body, windowSize)
+		return Truncate(body, windowSize)
 	}
 
 	// Build a set for O(1) match lookup.
@@ -33,7 +33,7 @@ func Snippet(body string, queryTerms []string) string {
 	}
 
 	if len(matches) == 0 {
-		return truncate(body, windowSize)
+		return Truncate(body, windowSize)
 	}
 
 	// Find the best window: the one containing the most matches.
@@ -124,9 +124,9 @@ func buildMarked(body string, winStart, winEnd int, matches []tokenize.TokenWith
 	return b.String()
 }
 
-// truncate returns the first n bytes of s, snapped to a word boundary,
+// Truncate returns the first n bytes of s, snapped to a word boundary,
 // with a trailing "…" if it was cut.
-func truncate(s string, n int) string {
+func Truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
