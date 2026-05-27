@@ -1,0 +1,104 @@
+[
+  {
+    "query": "lisp macros",
+    "category": "keyword",
+    "ideal": ["What Made Lisp Different", "Revenge of the Nerds", "The Roots of Lisp"]
+  },
+  {
+    "query": "arc programming language",
+    "category": "keyword",
+    "ideal": ["Why Arc Isn't Especially Object-Oriented", "The Roots of Lisp", "Five Questions about Language Design"]
+  },
+  {
+    "query": "y combinator",
+    "category": "keyword",
+    "ideal": ["A New Venture Animal", "How to Fund a Startup"]
+  },
+  {
+    "query": "viaweb",
+    "category": "keyword",
+    "ideal": ["What I Worked On", "How to Start a Startup", "Beating the Averages"]
+  },
+  {
+    "query": "bayesian spam filter",
+    "category": "keyword",
+    "ideal": ["Better Bayesian Filtering", "A Plan for Spam"]
+  },
+
+  {
+    "query": "how do i find work i love",
+    "category": "semantic",
+    "ideal": ["How to Do Great Work", "When To Do What You Love", "What Doesn't Seem Like Work?"]
+  },
+  {
+    "query": "i can't focus and waste time",
+    "category": "semantic",
+    "ideal": ["Good and Bad Procrastination", "Disconnecting Distraction", "The Acceleration of Addictiveness"]
+  },
+  {
+    "query": "feeling like an outsider in school",
+    "category": "semantic",
+    "ideal": ["Why Nerds are Unpopular", "Hackers and Painters", "What You'll Wish You'd Known"]
+  },
+  {
+    "query": "the meaning of being talented",
+    "category": "semantic",
+    "ideal": ["How to Do Great Work", "What Doesn't Seem Like Work?", "How to Do What You Love"]
+  },
+  {
+    "query": "should i drop out of college",
+    "category": "semantic",
+    "ideal": ["What You'll Wish You'd Known", "Before the Startup", "How to Do What You Love"]
+  },
+
+  {
+    "query": "startup advice for first time founders",
+    "category": "mixed",
+    "ideal": ["Before the Startup", "How to Start a Startup", "The Hardest Lessons for Startups to Learn"]
+  },
+  {
+    "query": "taste in design",
+    "category": "mixed",
+    "ideal": ["Taste for Makers", "Is There Such a Thing as Good Taste?"]
+  },
+  {
+    "query": "essay writing advice",
+    "category": "mixed",
+    "ideal": ["Writing,  Briefly", "Writing and Speaking", "The Age of the Essay"]
+  },
+  {
+    "query": "silicon valley culture",
+    "category": "mixed",
+    "ideal": ["How to Be Silicon Valley", "Why to Move to a Startup Hub", "Why Startup Hubs Work"]
+  },
+  {
+    "query": "inequality in wealth",
+    "category": "mixed",
+    "ideal": ["Mind the Gap", "The Refragmentation", "How People Get Rich Now"]
+  },
+  {
+    "query": "painting and programming",
+    "category": "mixed",
+    "ideal": ["Hackers and Painters"]
+  },
+  {
+    "query": "what makes a good investor",
+    "category": "mixed",
+    "ideal": ["How to Be an Angel Investor", "The Hacker's Guide to Investors"]
+  },
+  {
+    "query": "running a small company",
+    "category": "mixed",
+    "ideal": ["The Other Road Ahead", "Schlep Blindness", "How to Make Wealth"]
+  },
+  {
+    "query": "what we look for in founders",
+    "category": "mixed",
+    "ideal": ["What We Look for in Founders", "Five Founders", "Relentlessly Resourceful"]
+  },
+  {
+    "query": "how to pitch investors",
+    "category": "mixed",
+    "ideal": ["How to Present to Investors", "The Hacker's Guide to Investors", "How to Convince Investors"]
+  }
+]

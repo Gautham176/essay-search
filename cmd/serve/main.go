@@ -1,10 +1,5 @@
 // Command serve runs the HTTP search API.
-//
-// Usage:
-//
-//	go run ./cmd/serve
-//	# then:
-//	curl 'http://localhost:8080/search?q=startup+ideas'
+
 package main
 
 import (
@@ -110,8 +105,10 @@ func searchHandler(engine *search.Engine) http.HandlerFunc {
 			results, err = engine.Search(r.Context(), query, k)
 		case "semantic":
 			results, err = engine.SemanticSearch(r.Context(), query, k)
+		case "hybrid":
+			results, err = engine.HybridSearch(r.Context(), query, k)
 		default:
-			http.Error(w, `"mode" must be "keyword" or "semantic"`, http.StatusBadRequest)
+			http.Error(w, `"mode" must be "keyword", "semantic" or "hybrid"`, http.StatusBadRequest)
 			return
 		}
  

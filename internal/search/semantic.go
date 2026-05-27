@@ -175,7 +175,6 @@ func (e *Engine) fetchMetadata(ctx context.Context, ids []int) (map[int]docMeta,
 }
 
 // vectorLiteral converts a []float32 to pgvector's "[0.1,-0.2,...]" format.
-// Same helper as in cmd/embed; small enough to duplicate.
 func vectorLiteral(v []float32) string {
 	var b strings.Builder
 	b.Grow(len(v) * 12)
