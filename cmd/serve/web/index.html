@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Essay Search</title>
+  <style>
+    :root {
+      --bg: #fdfdf8;
+      --ink: #1a1a1a;
+      --muted: #6b6b6b;
+      --rule: #e2e2d8;
+      --link: #3b5bdb;
+      --mark: #fff3b0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.55;
+      margin: 0;
+      padding: 0 16px;
+    }
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px 0 96px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: normal;
+      margin: 0 0 4px;
+      letter-spacing: -0.01em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0 0 28px;
+    }
+    form { margin: 0 0 8px; }
+    .searchbar {
+      width: 100%;
+      font-family: inherit;
+      font-size: 18px;
+      padding: 10px 12px;
+      border: 1px solid var(--rule);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+    .searchbar:focus { border-color: var(--ink); }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 12px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .controls label { cursor: pointer; user-select: none; }
+    .controls input { margin-right: 4px; vertical-align: middle; }
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+      margin: 24px 0 16px;
+    }
+    .result {
+      padding: 18px 0;
+      border-top: 1px solid var(--rule);
+    }
+    .result:last-child { border-bottom: 1px solid var(--rule); }
+    .result a {
+      color: var(--link);
+      text-decoration: none;
+      font-size: 19px;
+    }
+    .result a:hover { text-decoration: underline; }
+    .result .meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 2px 0 8px;
+    }
+    .result .snippet {
+      font-size: 15px;
+      color: #333;
+    }
+    .result .snippet mark {
+      background: var(--mark);
+      color: inherit;
+      padding: 0 1px;
+    }
+    .empty { color: var(--muted); font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Essay Search</h1>
+    <p class="sub">Search across Paul Graham's essays — keyword, semantic, or hybrid.</p>
+
+    <form id="searchForm">
+      <input
+        id="q"
+        class="searchbar"
+        type="text"
+        placeholder="Try: how do I find work I love"
+        autocomplete="off"
+        autofocus
+      >
+      <div class="controls">
+        <span>mode:</span>
+        <label><input type="radio" name="mode" value="keyword" checked>keyword</label>
+        <label><input type="radio" name="mode" value="semantic">semantic</label>
+        <label><input type="radio" name="mode" value="hybrid">hybrid</label>
+      </div>
+    </form>
+
+    <div id="status" class="status"></div>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('q');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    let requestId = 0;
+
+    function currentMode() {
+      return document.querySelector('input[name="mode"]:checked').value;
+    }
+
+    async function runSearch() {
+      const query = input.value.trim();
+      if (!query) {
+        statusEl.textContent = '';
+        resultsEl.innerHTML = '';
+        return;
+      }
+
+      const myId = ++requestId;
+      const mode = currentMode();
+      statusEl.textContent = 'Searching…';
+
+      try {
+        const url = `/search?q=${encodeURIComponent(query)}&mode=${mode}&k=10`;
+        const resp = await fetch(url);
+        if (myId !== requestId) return; // a newer search superseded this one
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          statusEl.textContent = `Error: ${text || resp.status}`;
+          resultsEl.innerHTML = '';
+          return;
+        }
+
+        const data = await resp.json();
+        if (myId !== requestId) return;
+
+        render(data);
+      } catch (err) {
+        if (myId !== requestId) return;
+        statusEl.textContent = `Error: ${err.message}`;
+        resultsEl.innerHTML = '';
+      }
+    }
+
+    function render(data) {
+      if (!data.results || data.results.length === 0) {
+        statusEl.textContent = `No results for "${data.query}".`;
+        resultsEl.innerHTML = '';
+        return;
+      }
+
+      statusEl.textContent =
+        `Found ${data.count} result${data.count === 1 ? '' : 's'} in ${data.latency_ms}ms`;
+
+      resultsEl.innerHTML = data.results.map(r => {
+        // The snippet contains server-generated <mark> tags. We trust it
+        // because it's our own server, but we escape the title and other
+        // user-adjacent fields. Snippet is set via innerHTML to render marks.
+        const safeTitle = escapeHtml(r.title);
+        const safeUrl = escapeHtml(r.url);
+        const safeAuthor = escapeHtml(r.author || '');
+        return `
+          <div class="result">
+            <a href="${safeUrl}" target="_blank" rel="noopener">${safeTitle}</a>
+            <div class="meta">${safeAuthor} · score ${r.score.toFixed(3)}</div>
+            <div class="snippet">${sanitizeSnippet(r.snippet || '')}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Escape everything, then re-allow only <mark> and </mark>. This keeps
+    // the highlight rendering while preventing any other HTML injection
+    // from snippet text (defense in depth — the corpus is PG's essays, but
+    // good habit).
+    function sanitizeSnippet(s) {
+      const escaped = escapeHtml(s);
+      return escaped
+        .replace(/&lt;mark&gt;/g, '<mark>')
+        .replace(/&lt;\/mark&gt;/g, '</mark>');
+    }
+
+    function escapeHtml(s) {
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Debounce: search 250ms after the user stops typing, so we don't
+    // fire a request on every keystroke.
+    let debounceTimer = null;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(runSearch, 250);
+    });
+
+    // Re-run immediately when the mode changes (no debounce needed).
+    document.querySelectorAll('input[name="mode"]').forEach(radio => {
+      radio.addEventListener('change', runSearch);
+    });
+
+    // Submit (Enter key) runs immediately.
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      clearTimeout(debounceTimer);
+      runSearch();
+    });
+  </script>
+</body>
+</html>

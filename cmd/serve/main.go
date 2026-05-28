@@ -4,6 +4,7 @@ package main
 
 import (
 	"database/sql"
+	"embed"
 	"encoding/json"
 	"flag"
 	"log"
@@ -15,6 +16,9 @@ import (
 	"github.com/Gautham176/essay-search/internal/search"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
+ 
+//go:embed web/index.html
+var webFS embed.FS
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP listen address")
@@ -40,6 +44,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/search", searchHandler(engine))
 	mux.HandleFunc("/health", healthHandler(engine))
+	mux.HandleFunc("/", rootHandler())
 
 	srv := &http.Server{
 		Addr:              *addr,
@@ -144,6 +149,26 @@ func healthHandler(engine *search.Engine) http.HandlerFunc {
 			"total_docs":  totalDocs,
 			"avg_doc_len": avgLen,
 		})
+	}
+}
+
+func rootHandler() http.HandlerFunc {
+	// Read the embedded file once at startup.
+	page, err := webFS.ReadFile("web/index.html")
+	if err != nil {
+		// If this fails, the binary was built without the file — a build
+		// error we want to catch loudly, immediately, at startup.
+		panic("embedded web/index.html missing: " + err.Error())
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Only serve the page at exactly "/". Anything else under "/" that
+		// isn't /search or /health is a 404 (e.g. /favicon.ico, typos).
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(page)
 	}
 }
 
