@@ -16,6 +16,10 @@ import (
 // expects natural language; stemming and stopword removal would destroy
 // the semantic signal it relies on.
 func (e *Engine) SemanticSearch(ctx context.Context, query string, k int) ([]Result, error) {
+	if !e.semanticAvailable {
+		return nil, ErrSemanticUnavailable
+	}
+	
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, nil

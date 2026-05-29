@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE IF NOT EXISTS embeddings (
     id          SERIAL PRIMARY KEY,
     doc_id      INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,

@@ -4,11 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"errors"
+	"log"
+	"time"
 
 	"github.com/Gautham176/essay-search/internal/tokenize"
 	"github.com/Gautham176/essay-search/internal/snippet"
 	"github.com/Gautham176/essay-search/internal/embed"
 )
+
+var ErrSemanticUnavailable = errors.New("semantic search unavailable: embedder cannot be reached")
 
 // Result is a single ranked search result.
 type Result struct {
@@ -24,33 +29,46 @@ type Result struct {
 // a few corpus-level statistics that we cache at startup because they're
 // expensive to recompute per query.
 type Engine struct {
-    db         *sql.DB
-    totalDocs  int
-    avgDocLen  float64
-    embedder   *embed.Client
+	db                 *sql.DB
+	totalDocs          int
+	avgDocLen          float64
+	embedder           *embed.Client
+	semanticAvailable  bool
 }
 
 // NewEngine connects to the corpus statistics and returns a ready-to-query
 // Engine. Call this once at server startup, not per request.
 func NewEngine(db *sql.DB) (*Engine, error) {
-    e := &Engine{
-        db:       db,
-        embedder: embed.NewClient(),
-    }
+	e := &Engine{
+		db:       db,
+		embedder: embed.NewClient(),
+	}
+ 
+	row := db.QueryRow(`SELECT count(*), coalesce(avg(word_count), 0) FROM documents`)
+	if err := row.Scan(&e.totalDocs, &e.avgDocLen); err != nil {
+		return nil, fmt.Errorf("load corpus stats: %w", err)
+	}
 
-    row := db.QueryRow(`SELECT count(*), coalesce(avg(word_count), 0) FROM documents`)
-    if err := row.Scan(&e.totalDocs, &e.avgDocLen); err != nil {
-        return nil, fmt.Errorf("load corpus stats: %w", err)
-    }
-    if e.totalDocs == 0 {
-        return nil, fmt.Errorf("corpus is empty — run cmd/ingest and cmd/buildindex first")
-    }
-    return e, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err := e.embedder.Embed(ctx, "ping"); err != nil {
+		log.Printf("embedder unreachable, semantic/hybrid disabled: %v", err)
+		e.semanticAvailable = false
+	} else {
+		log.Printf("embedder reachable, semantic/hybrid enabled")
+		e.semanticAvailable = true
+	}
+ 
+	return e, nil
 }
 
 // Stats returns corpus-level numbers, mostly useful for /health endpoints.
 func (e *Engine) Stats() (totalDocs int, avgDocLen float64) {
 	return e.totalDocs, e.avgDocLen
+}
+
+func (e *Engine) SemanticAvailable() bool {
+	return e.semanticAvailable
 }
 
 // Search returns the top-k documents for the query, ranked by BM25.

@@ -1,0 +1,39 @@
+services:
+  db:
+    # Official pgvector image: Postgres 16 with the vector extension baked in.
+    # Same Postgres major version you've been running locally.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: essay_search
+      POSTGRES_PASSWORD: dev_only_password
+      POSTGRES_DB: essay_search
+    ports:
+      # Expose on host port 5433 so it doesn't conflict with the WSL
+      # Postgres still listening on 5432. You can `psql` into either.
+      - "5433:5432"
+    volumes:
+      # Named volume for data persistence across `docker compose down`.
+      - pgdata:/var/lib/postgresql/data
+      # Mount migrations as read-only init scripts. Postgres runs every
+      # .sql file in /docker-entrypoint-initdb.d on first startup, in
+      # alphabetical order. Our 001/002/003 prefixes give the right
+      # ordering for free.
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U essay_search -d essay_search"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  serve:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://essay_search:dev_only_password@db:5432/essay_search?sslmode=disable
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

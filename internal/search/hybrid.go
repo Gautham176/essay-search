@@ -26,6 +26,10 @@ const RRFConstant = 60
 func (e *Engine) HybridSearch(ctx context.Context, query string, k int) ([]Result, error) {
 	// Over-fetch from each retriever: fusion only works if both have
 	// enough candidates to overlap. 5*k or 50, whichever is larger.
+	if !e.semanticAvailable {
+		return nil, ErrSemanticUnavailable
+	}
+	
 	candidateN := k * 5
 	if candidateN < 50 {
 		candidateN = 50

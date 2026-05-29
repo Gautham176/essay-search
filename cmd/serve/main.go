@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"errors"
 
 	"github.com/Gautham176/essay-search/internal/search"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -118,10 +119,20 @@ func searchHandler(engine *search.Engine) http.HandlerFunc {
 		}
  
 		if err != nil {
+			if errors.Is(err, search.ErrSemanticUnavailable) {
+				http.Error(
+					w,
+					"semantic and hybrid modes require a reachable embedder; "+
+						"this deployment is keyword-only. Use mode=keyword.",
+					http.StatusServiceUnavailable,
+				)
+				return
+			}
 			log.Printf("search error (%s): %v", mode, err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
+		
 		if results == nil {
 			results = []search.Result{}
 		}

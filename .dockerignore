@@ -1,0 +1,22 @@
+# Don't ship the corpus into the image — it gets loaded into Postgres,
+# not embedded in the binary.
+corpus/
+
+# Or anything else local-only.
+.git/
+.gitignore
+.dockerignore
+scripts/.venv/
+evals/
+README.md
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+
+# Compiled binaries you might have lying around at the repo root
+/buildindex
+/ingest
+/serve
+/embed
