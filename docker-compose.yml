@@ -32,6 +32,9 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://essay_search:dev_only_password@db:5432/essay_search?sslmode=disable
+      OLLAMA_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080:8080"
 

@@ -49,7 +49,7 @@ func NewEngine(db *sql.DB) (*Engine, error) {
 		return nil, fmt.Errorf("load corpus stats: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	if _, err := e.embedder.Embed(ctx, "ping"); err != nil {
 		log.Printf("embedder unreachable, semantic/hybrid disabled: %v", err)

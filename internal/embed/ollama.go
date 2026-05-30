@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+	"os"
 )
 
 // Default Ollama address and model. Override per-instance if needed.
@@ -31,11 +32,15 @@ type Client struct {
 // a 60s timeout — generous, since first calls can be slow if Ollama is
 // loading the model into memory.
 func NewClient() *Client {
-	return &Client{
-		BaseURL: DefaultBaseURL,
-		Model:   DefaultModel,
-		HTTP:    &http.Client{Timeout: 60 * time.Second},
-	}
+    baseURL := DefaultBaseURL
+    if env := os.Getenv("OLLAMA_URL"); env != "" {
+        baseURL = env
+    }
+    return &Client{
+        BaseURL: baseURL,
+        Model:   DefaultModel,
+        HTTP:    &http.Client{Timeout: 60 * time.Second},
+    }
 }
 
 type embedRequest struct {
